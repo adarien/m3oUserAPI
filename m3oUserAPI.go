@@ -103,20 +103,33 @@ func (t *Client) CreateUser(id, username, email, password string) {
 	fmt.Println("User Created")
 }
 
-func (t *Client) GetUserByID(id string) ([]byte, error) {
+func (t *Client) GetUserByID(id string) {
 	data := UserID{id}
 	method := "Read"
 	buildJSON, err := json.Marshal(data)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 	body := bytes.NewReader(buildJSON)
 
 	bd, err := t.WorkAPI(body, method)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
-	return bd, nil
+
+	var exist ErrorInfo
+	if err = json.Unmarshal(bd, &exist); err != nil {
+		log.Fatal(err)
+	}
+	if exist.Info() == "not found" {
+		fmt.Printf("ID %s not found\n", id)
+	} else {
+		var r AssetResponse
+		if err = json.Unmarshal(bd, &r); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(r.Asset.Info())
+	}
 }
 
 func (t *Client) DeleteUserByID(id string) {

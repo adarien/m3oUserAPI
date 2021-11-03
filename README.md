@@ -5,7 +5,7 @@
 package main
 
 import (
-	"https://github.com/adarien/m3oUserAPI"
+	"github.com/adarien/m3oUserAPI"
 )
 
 const APIKey = "YOUR_APIKEY"

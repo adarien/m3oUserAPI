@@ -89,67 +89,64 @@ func (t *Client) WorkAPI(body *bytes.Reader, method string) ([]byte, error) {
 	return bd, nil
 }
 
-func (t *Client) CreateUser(id, username, email, password string) error {
+func (t *Client) CreateUser(id, username, email, password string) (string, error) {
 	data := NewUser{id, username, email, password}
 	method := "Create"
 	buildJSON, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return "", err
 	}
 	body := bytes.NewReader(buildJSON)
 
 	_, err = t.WorkAPI(body, method)
 	if err != nil {
-		return err
+		return "", err
 	}
-	fmt.Println("User Created")
-	return nil
+	return "User Created", nil
 }
 
-func (t *Client) GetUserByID(id string) error {
+func (t *Client) GetUserByID(id string) (string, error) {
 	data := UserID{id}
 	method := "Read"
 	buildJSON, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return "", err
 	}
 	body := bytes.NewReader(buildJSON)
 	bd, err := t.WorkAPI(body, method)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	var exist ErrorInfo
 	if err = json.Unmarshal(bd, &exist); err != nil {
-		return err
+		return "", err
 	}
 
 	if exist.Info() == "not found" {
 		er_text := fmt.Sprintf("ID %s not found\n", id)
-		return errors.New(er_text)
+		return "", errors.New(er_text)
 	}
 	var r AssetResponse
 	if err = json.Unmarshal(bd, &r); err != nil {
-		return err
+		return "", err
 	}
-	fmt.Println(r.Asset.Info())
 
-	return nil
+	return r.Asset.Info(), nil
 }
 
-func (t *Client) DeleteUserByID(id string) error {
+func (t *Client) DeleteUserByID(id string) (string, error) {
 	data := UserID{id}
 	method := "Delete"
 	buildJSON, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return "", err
 	}
 	body := bytes.NewReader(buildJSON)
 
 	_, err = t.WorkAPI(body, method)
 	if err != nil {
-		return err
+		return "", err
 	}
-	fmt.Println("User Removed")
-	return nil
+	return "User Removed", nil
 }

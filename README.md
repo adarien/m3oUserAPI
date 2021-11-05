@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"m3oUser/m3oUserAPI"
 )
@@ -19,28 +20,32 @@ func main() {
 	username := "petya"
 	email := "petya@ninja.go"
 	password := "qwerty123"
-	err := client.CreateUser(id, username, email, password)
+	result, err := client.CreateUser(id, username, email, password)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(result)
 
 	// Выводим информацию по ID
-	err = client.GetUserByID(id)
+	result, err = client.GetUserByID(id)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(result)
 
 	// Удаляем пользователя по ID
-	err = client.DeleteUserByID(id)
+	result, err = client.DeleteUserByID(id)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(result)
 
 	// Проверяем статус ошибки при получении информации об удалённом пользователе
-	err = client.GetUserByID(id)
+	result, err = client.GetUserByID(id)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(result)
 }
 
 ```

@@ -3,11 +3,13 @@ package m3oUserAPI
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
+
+const URL = "https://api.m3o.com/v1/user/"
 
 type UserID struct {
 	ID string `json:"id"`
@@ -67,7 +69,7 @@ func (e ErrorInfo) Info() string {
 
 func (t *Client) WorkAPI(body *bytes.Reader, method string) ([]byte, error) {
 	bearer := "Bearer " + t.token
-	req, err := http.NewRequest("POST", "https://api.m3o.com/v1/user/"+method, body)
+	req, err := http.NewRequest(http.MethodPost, URL+method, body)
 	if err != nil {
 		return nil, err
 	}
@@ -87,63 +89,67 @@ func (t *Client) WorkAPI(body *bytes.Reader, method string) ([]byte, error) {
 	return bd, nil
 }
 
-func (t *Client) CreateUser(id, username, email, password string) {
+func (t *Client) CreateUser(id, username, email, password string) error {
 	data := NewUser{id, username, email, password}
 	method := "Create"
 	buildJSON, err := json.Marshal(data)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	body := bytes.NewReader(buildJSON)
 
 	_, err = t.WorkAPI(body, method)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	fmt.Println("User Created")
+	return nil
 }
 
-func (t *Client) GetUserByID(id string) {
+func (t *Client) GetUserByID(id string) error {
 	data := UserID{id}
 	method := "Read"
 	buildJSON, err := json.Marshal(data)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	body := bytes.NewReader(buildJSON)
-
 	bd, err := t.WorkAPI(body, method)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	var exist ErrorInfo
 	if err = json.Unmarshal(bd, &exist); err != nil {
-		log.Fatal(err)
+		return err
 	}
+
 	if exist.Info() == "not found" {
-		fmt.Printf("ID %s not found\n", id)
-	} else {
-		var r AssetResponse
-		if err = json.Unmarshal(bd, &r); err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(r.Asset.Info())
+		er_text := fmt.Sprintf("ID %s not found\n", id)
+		return errors.New(er_text)
 	}
+	var r AssetResponse
+	if err = json.Unmarshal(bd, &r); err != nil {
+		return err
+	}
+	fmt.Println(r.Asset.Info())
+
+	return nil
 }
 
-func (t *Client) DeleteUserByID(id string) {
+func (t *Client) DeleteUserByID(id string) error {
 	data := UserID{id}
 	method := "Delete"
 	buildJSON, err := json.Marshal(data)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	body := bytes.NewReader(buildJSON)
 
 	_, err = t.WorkAPI(body, method)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	fmt.Println("User Removed")
+	return nil
 }

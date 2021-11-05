@@ -5,7 +5,8 @@
 package main
 
 import (
-	"github.com/adarien/m3oUserAPI"
+	"log"
+	"m3oUser/m3oUserAPI"
 )
 
 const APIKey = "YOUR_APIKEY"
@@ -18,15 +19,28 @@ func main() {
 	username := "petya"
 	email := "petya@ninja.go"
 	password := "qwerty123"
-	client.CreateUser(id, username, email, password)
+	err := client.CreateUser(id, username, email, password)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Выводим информацию по ID
-	client.GetUserByID(id)
+	err = client.GetUserByID(id)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Удаляем пользователя по ID
-	client.DeleteUserByID(id)
+	err = client.DeleteUserByID(id)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Проверяем статус ошибки при получении информации об удалённом пользователе
-	client.GetUserByID(id)
+	err = client.GetUserByID(id)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
+
 ```

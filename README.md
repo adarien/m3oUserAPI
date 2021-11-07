@@ -20,32 +20,33 @@ func main() {
 	username := "petya"
 	email := "petya@ninja.go"
 	password := "qwerty123"
-	result, err := client.CreateUser(id, username, email, password)
+	err := client.CreateUser(m3oUserAPI.CreateUserInput{
+		ID: id, Username: username, Email: email, Password: password,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(result)
+	fmt.Println("User Created")
 
 	// Выводим информацию по ID
-	result, err = client.GetUserByID(id)
+	user, err := client.GetUserByID(id)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(result)
+	fmt.Println(user.ID, user.Username, user.Email)
 
 	// Удаляем пользователя по ID
-	result, err = client.DeleteUserByID(id)
+	err = client.DeleteUserByID(id)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(result)
+	fmt.Println("User Removed")
 
 	// Проверяем статус ошибки при получении информации об удалённом пользователе
-	result, err = client.GetUserByID(id)
+	user, err = client.GetUserByID(id)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(result)
+	fmt.Println(user)
 }
-
 ```

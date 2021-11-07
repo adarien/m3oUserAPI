@@ -15,7 +15,7 @@ type UserID struct {
 	ID string `json:"id"`
 }
 
-type NewUser struct {
+type CreateUserInput struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
@@ -49,17 +49,6 @@ func NewClientAPI(APIKey string) *Client {
 	return &Client{token: APIKey}
 }
 
-func (d UserInfo) Info() string {
-	return fmt.Sprintf("User Info:\n\tID: %s\n\tName: %s\n\tEmail: %s\n"+
-		"\tCreate Time: %s\n\tUpdate Time: %s",
-		d.ID,
-		d.Username,
-		d.Email,
-		d.Created,
-		d.Updated,
-	)
-}
-
 func (e ErrorInfo) Info() string {
 	if e.Code == 500 {
 		return fmt.Sprintf("%s", e.Detail)
@@ -89,64 +78,63 @@ func (t *Client) WorkAPI(body *bytes.Reader, method string) ([]byte, error) {
 	return bd, nil
 }
 
-func (t *Client) CreateUser(id, username, email, password string) (string, error) {
-	data := NewUser{id, username, email, password}
+func (t *Client) CreateUser(c CreateUserInput) error {
 	method := "Create"
-	buildJSON, err := json.Marshal(data)
+	buildJSON, err := json.Marshal(c)
 	if err != nil {
-		return "", err
+		return err
 	}
 	body := bytes.NewReader(buildJSON)
 
 	_, err = t.WorkAPI(body, method)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return "User Created", nil
+	return nil
 }
 
-func (t *Client) GetUserByID(id string) (string, error) {
+func (t *Client) GetUserByID(id string) (UserInfo, error) {
 	data := UserID{id}
 	method := "Read"
 	buildJSON, err := json.Marshal(data)
 	if err != nil {
-		return "", err
+		return UserInfo{}, err
 	}
 	body := bytes.NewReader(buildJSON)
 	bd, err := t.WorkAPI(body, method)
 	if err != nil {
-		return "", err
+		return UserInfo{}, err
 	}
 
 	var exist ErrorInfo
 	if err = json.Unmarshal(bd, &exist); err != nil {
-		return "", err
+		return UserInfo{}, err
 	}
 
 	if exist.Info() == "not found" {
 		er_text := fmt.Sprintf("ID %s not found\n", id)
-		return "", errors.New(er_text)
+		return UserInfo{}, errors.New(er_text)
 	}
 	var r AssetResponse
 	if err = json.Unmarshal(bd, &r); err != nil {
-		return "", err
+		return UserInfo{}, err
 	}
 
-	return r.Asset.Info(), nil
+	return r.Asset, nil
 }
 
-func (t *Client) DeleteUserByID(id string) (string, error) {
+func (t *Client) DeleteUserByID(id string) error {
 	data := UserID{id}
 	method := "Delete"
 	buildJSON, err := json.Marshal(data)
 	if err != nil {
-		return "", err
+		return err
 	}
 	body := bytes.NewReader(buildJSON)
 
 	_, err = t.WorkAPI(body, method)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return "User Removed", nil
+	return nil
 }
